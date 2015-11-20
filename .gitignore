@@ -1,0 +1,14 @@
+# Project headers #
+###################
+*.sublime-project
+*.sublime-workspace
+
+# Log files #
+###################
+*.log
+
+# Some folders #
+###################
+node_modules/
+.idea/
+blob-local-storage/
