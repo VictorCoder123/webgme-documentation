@@ -230,13 +230,16 @@ define([
         var client = this._control._client;
         var metaObj = client.getMeta(this._metaInfo[CONSTANTS.GME_ID]);
         var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-        var documentation = nodeObj.getAttribute('documentation');
+        var documentation = nodeObj.getAttribute('documentation') || 'Attribute documentation is not defined.';
         this.$doc.append($(marked(documentation)));
+
         // Initialize with documentation attribute and save callback function
         this.editorDialog.initialize(documentation, 
             function(text){
                 try {
-                    client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], 'documentation', text);
+                    // Don't save if documentation attribute is not defined
+                    if(nodeObj.getAttribute('documentation') !== undefined)
+                        client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], 'documentation', text);
                     self.$doc.empty();
                     self.$doc.append($(marked(text)));
                 } catch (e) {
