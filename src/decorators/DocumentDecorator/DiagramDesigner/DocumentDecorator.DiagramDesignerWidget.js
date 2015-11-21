@@ -7,6 +7,7 @@
  */
 
 define([
+    '../Libs/EpicEditor/js/epiceditor',
     'js/Constants',
     'js/NodePropertyNames',
     'js/Widgets/DiagramDesigner/DiagramDesignerWidget.DecoratorBase',
@@ -15,6 +16,7 @@ define([
     'text!./DocumentDecorator.DiagramDesignerWidget.html',
     'css!./DocumentDecorator.DiagramDesignerWidget'
 ], function (
+    marked,
     CONSTANTS, 
     nodePropertyNames, 
     DiagramDesignerWidgetDecoratorBase, 
@@ -41,6 +43,19 @@ define([
 
         this._skinParts = {};
 
+        this.$doc = this.$el.find('.doc').first();
+
+        // Use default marked options
+        marked.setOptions({
+          gfm: true,
+          tables: true,
+          breaks: false,
+          pedantic: false,
+          sanitize: true,
+          smartLists: true,
+          smartypants: false
+        });
+
         this.logger.debug('DocumentDecorator ctor');
     };
 
@@ -58,13 +73,14 @@ define([
         // Initialize dialog with EpicEditor.
         this._initDialog();
         this._renderName();
+
         //render text-editor based META editing UI piece
         this._skinParts.$EditorBtn = TEXT_META_EDIT_BTN_BASE.clone();
         this.$el.append(this._skinParts.$EditorBtn);
+
         // Load EpicEditor on click
         this._skinParts.$EditorBtn.on('click', function (event) {
             if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true) {
-
                 self.editorDialog.show();
             }
             event.stopPropagation();
@@ -85,24 +101,27 @@ define([
             event.preventDefault();
         });
 
+        // Show Popover when click on name
+        this.skinParts.$name.on('click', function(event){
+            self.skinParts.$name.popover({});
+            self.skinParts.$name.popover('show');
+            console.log(self.skinParts.$name.popover);
+            event.stopPropagation();
+            event.preventDefault();
+        });
+
         //let the parent decorator class do its job first
         __parent_proto__.on_addTo.apply(this, arguments);
     };
 
     DocumentDecorator.prototype._renderName = function () {
         var client = this._control._client,
-            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-            console.log(this._control);
-            console.log(this._control._client);
-            console.log(nodeObj);
-            console.log(this.hostDesignerItem);
+            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);    
         //render GME-ID in the DOM, for debugging
         this.$el.attr({'data-id': this._metaInfo[CONSTANTS.GME_ID]});
-
         if (nodeObj) {
             this.name = nodeObj.getAttribute(nodePropertyNames.Attributes.name) || '';
         }
-        console.log(this.name);
         //find name placeholder
         this.skinParts.$name = this.$el.find('.name');
         this.skinParts.$name.text(this.name);
@@ -207,19 +226,24 @@ define([
      * @return {void} 
      */
     DocumentDecorator.prototype._initDialog = function(){
+        var self = this;
         var client = this._control._client;
         var metaObj = client.getMeta(this._metaInfo[CONSTANTS.GME_ID]);
-        var self = this;
-        // Pass initial text to show and saveCallback function to save change
-        this.editorDialog.initialize(JSON.stringify(metaObj, undefined, 2), 
+        var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
+        var documentation = nodeObj.getAttribute('documentation');
+        this.$doc.append($(marked(documentation)));
+        // Initialize with documentation attribute and save callback function
+        this.editorDialog.initialize(documentation, 
             function(text){
                 try {
-                    var newMetaObj = JSON.parse(text);
-                    client.setMeta(self._metaInfo[CONSTANTS.GME_ID], newMetaObj);
+                    client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], 'documentation', text);
+                    self.$doc.empty();
+                    self.$doc.append($(marked(text)));
                 } catch (e) {
                     self.logger.error('Saving META failed... Either not JSON object or something else went wrong...');
                 }
-            });
+            }
+        );
     }
 
     return DocumentDecorator;

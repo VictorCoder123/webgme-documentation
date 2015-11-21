@@ -15,6 +15,8 @@ define(['js/util',
 
 		/**
 		 * DocumentEditorDialog Constructor
+		 * Insert dialog modal into body and initialize editor with
+		 * customized options
 		 */
 		DocumentEditorDialog = function(){
 			// Get Modal Template node for Editor Dialog and append it to body
@@ -31,9 +33,17 @@ define(['js/util',
 	         * invoked in callback function when container is rendered on DOM */ 
 	        var editorOptions = {
 	        	container: this._content.get(0), // Get raw DOM element
-	        	basePath: 'decorators/DocumentDecorator/Libs/EpicEditor/'
+	        	basePath: 'decorators/DocumentDecorator/Libs/EpicEditor/',
+	        	autogrow: {
+	        		minHeight: 300,
+	        	},
+	        	button: {
+	        		fullscreen: false,
+	        	},
+	        	parser: marked,
 	        };
 	        this.editor = new EpicEditor(editorOptions);
+	        this.text = ''; // Keep track modified text in editor
 		}
 
 		/**
@@ -47,12 +57,11 @@ define(['js/util',
 		 * @return {void}              
 		 */
 		DocumentEditorDialog.prototype.initialize = function(text, saveCallback){
-			var self = this;			
+			var self = this;	
+			this.text = text; // Initial text from Attribute documentation
 
 			// Initialize Modal and append it to main DOM
 			this._dialog.modal({ show: false});
-			
-			//console.log(self.editor.exportFile());
 
 	        // Event listener on click for SAVE button
 	        this._btnSave.on('click', function (event) {
@@ -61,21 +70,23 @@ define(['js/util',
 	            // Invoke callback to deal with modified text, like save it in client.
 	            if(saveCallback)
 	            	saveCallback.call(self, self.editor.exportFile());
-
 	            event.stopPropagation();
 	            event.preventDefault();
 	        });
 
+	        // Listener on event when dialog is shown
+			// Use callback to show editor after Modal window is shown.
+	        this._dialog.on('shown.bs.modal', function () {
+	        	if(!self.editor.is('loaded')) // Load editor only once
+	            	self.editor.load();
+	           	// Render text from params into Editor and store it in local storage
+	        	self.editor.importFile('epiceditor', self.text);
+	        });	     
+
 	        // Listener on event when dialog is hidden
 	        this._dialog.on('hidden.bs.modal', function () {
-	            //self._dialog.remove();
-	            //self._dialog.empty();
-	            //self._dialog = undefined;
+	            self.text = self.editor.exportFile();
 	        });
-	        
-	        // Render text from params into Editor
-	        // @@TODO
-
 		};
 
 		/**
@@ -85,15 +96,8 @@ define(['js/util',
 		 * @return {void} 
 		 */
 		DocumentEditorDialog.prototype.show = function(){
-			var self = this;
-			
-			self._dialog.modal('show');
-
-			// Use callback to show editor after Modal window is shown.
-	        this._dialog.on('shown.bs.modal', function () {
-	        	if(!self.editor.is('loaded')) // Load editor only once
-	            	self.editor.load();
-	        });	        
+			var self = this;	
+			self._dialog.modal('show');   
 		}
 
 		return DocumentEditorDialog;
