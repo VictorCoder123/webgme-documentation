@@ -38,7 +38,7 @@ define(['js/util',
 	        		minHeight: 300,
 	        	},
 	        	button: {
-	        		fullscreen: false,
+	        		fullscreen: true,
 	        	},
 	        	parser: marked,
 	        };
