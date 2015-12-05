@@ -90,6 +90,14 @@ define(['js/util',
 		};
 
 		/**
+		 * Update text in editor area
+		 * @param  {String} newtext [new text to replace old one]
+		 */
+		DocumentEditorDialog.prototype.updateText = function(newtext){
+			this.text = newtext;
+		}
+		
+		/**
 		 * Show actual text editor in its container by loading EpicEditor, this method
 		 * must be put into listener's callback function because its container is not appended
 		 * into DOM at this point and load() cannot access other DOM elements.

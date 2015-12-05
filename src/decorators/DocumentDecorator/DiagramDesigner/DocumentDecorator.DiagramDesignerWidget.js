@@ -8,6 +8,7 @@
 
 define([
     '../Libs/EpicEditor/js/epiceditor',
+    'js/RegistryKeys',
     'js/Constants',
     'js/NodePropertyNames',
     'js/Widgets/DiagramDesigner/DiagramDesignerWidget.DecoratorBase',
@@ -17,6 +18,7 @@ define([
     'css!./DocumentDecorator.DiagramDesignerWidget'
 ], function (
     marked,
+    REGISTRY_KEYS,
     CONSTANTS, 
     nodePropertyNames, 
     DiagramDesignerWidgetDecoratorBase, 
@@ -130,16 +132,61 @@ define([
     DocumentDecorator.prototype.update = function () {
         var client = this._control._client,
             nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]),
-            newName = '';
+            newName = '',
+            newDoc = '';
 
         if (nodeObj) {
             newName = nodeObj.getAttribute(nodePropertyNames.Attributes.name) || '';
+            newDoc = nodeObj.getAttribute('documentation') || '';
+            // Update docs on node when attribute "documentation" changes
+            this.$doc.empty();
+            this.$doc.append($(marked(newDoc)));
+            this.editorDialog.updateText(newDoc);
 
             if (this.name !== newName) {
                 this.name = newName;
                 this.skinParts.$name.text(this.name);
             }
         }
+
+        this._updateColors();
+    };
+
+    DocumentDecorator.prototype._updateColors = function () {
+        this._getNodeColorsFromRegistry();
+
+        if (this.fillColor) {
+            this.$el.css({'background-color': this.fillColor});
+        } else {
+            this.$el.css({'background-color': ''});
+        }
+
+        if (this.borderColor) {
+            this.$el.css({
+                'border-color': this.borderColor,
+                'box-shadow': '0px 0px 7px 0px ' + this.borderColor + ' inset'
+            });
+            this.skinParts.$name.css({'border-color': this.borderColor});
+        } else {
+            this.$el.css({
+                'border-color': '',
+                'box-shadow': ''
+            });
+            this.skinParts.$name.css({'border-color': ''});
+        }
+
+        if (this.textColor) {
+            this.$el.css({color: this.textColor});
+        } else {
+            this.$el.css({color: ''});
+        }
+    };
+
+    DocumentDecorator.prototype._getNodeColorsFromRegistry = function () {
+        var objID = this._metaInfo[CONSTANTS.GME_ID];
+        this.fillColor = this.preferencesHelper.getRegistry(objID, REGISTRY_KEYS.COLOR, true);
+        this.borderColor = this.preferencesHelper.getRegistry(objID, REGISTRY_KEYS.BORDER_COLOR, true);
+        this.textColor = this.preferencesHelper.getRegistry(objID, REGISTRY_KEYS.TEXT_COLOR, true);
     };
 
     DocumentDecorator.prototype.getConnectionAreas = function (id /*, isEnd, connectionMetaInfo*/) {
