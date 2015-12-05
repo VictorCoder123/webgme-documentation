@@ -72,6 +72,8 @@ define([
 
     DocumentDecorator.prototype.on_addTo = function () {
         var self = this;
+        var client = this._control._client;
+        var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
         // Initialize dialog with EpicEditor.
         this._initDialog();
         this._renderName();
@@ -80,9 +82,15 @@ define([
         this._skinParts.$EditorBtn = TEXT_META_EDIT_BTN_BASE.clone();
         this.$el.append(this._skinParts.$EditorBtn);
 
+        // Show error message if documentation attribute is not defined
+        if(nodeObj.getAttribute('documentation') === undefined){
+            this.$doc.append("Editor is disabled because attribute 'documentation' is not found in Meta-Model");
+        }
+
         // Load EpicEditor on click
         this._skinParts.$EditorBtn.on('click', function (event) {
-            if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true) {
+            if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true && 
+                nodeObj.getAttribute('documentation') !== undefined) {
                 self.editorDialog.show();
             }
             event.stopPropagation();
@@ -277,16 +285,16 @@ define([
         var client = this._control._client;
         var metaObj = client.getMeta(this._metaInfo[CONSTANTS.GME_ID]);
         var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-        var documentation = nodeObj.getAttribute('documentation') || 'Attribute documentation is not defined.';
-        this.$doc.append($(marked(documentation)));
+        var documentation = nodeObj.getAttribute('documentation') || 'Click to enter documentation.';
+        if(nodeObj.getAttribute('documentation') !== undefined){
+            this.$doc.append($(marked(documentation)));
+        } 
 
         // Initialize with documentation attribute and save callback function
         this.editorDialog.initialize(documentation, 
             function(text){
                 try {
-                    // Don't save if documentation attribute is not defined
-                    if(nodeObj.getAttribute('documentation') !== undefined)
-                        client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], 'documentation', text);
+                    client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], 'documentation', text);
                     self.$doc.empty();
                     self.$doc.append($(marked(text)));
                 } catch (e) {
