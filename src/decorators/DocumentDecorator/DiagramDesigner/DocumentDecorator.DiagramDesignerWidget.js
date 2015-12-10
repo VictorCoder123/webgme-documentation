@@ -13,7 +13,6 @@ define([
     'js/NodePropertyNames',
     'js/Widgets/DiagramDesigner/DiagramDesignerWidget.DecoratorBase',
     './DocumentEditorDialog',
-    '../Core/DocumentDecorator.Core',
     'text!./DocumentDecorator.DiagramDesignerWidget.html',
     'css!./DocumentDecorator.DiagramDesignerWidget'
 ], function (
@@ -23,7 +22,6 @@ define([
     nodePropertyNames, 
     DiagramDesignerWidgetDecoratorBase, 
     DocumentEditorDialog,
-    DocumentDecoratorCore, 
     DocumentDecoratorTemplate) {
 
     //'use strict';
@@ -62,7 +60,6 @@ define([
     };
 
     _.extend(DocumentDecorator.prototype, DiagramDesignerWidgetDecoratorBase.prototype);
-    _.extend(DocumentDecorator.prototype, DocumentDecoratorCore.prototype);
 
     DocumentDecorator.prototype.DECORATORID = DECORATOR_ID;
 
