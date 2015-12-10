@@ -24,7 +24,7 @@ define([
     DocumentEditorDialog,
     DocumentDecoratorTemplate) {
 
-    //'use strict';
+    'use strict';
 
     var DocumentDecorator,
         __parent__ = DiagramDesignerWidgetDecoratorBase,
@@ -81,7 +81,7 @@ define([
 
         // Show error message if documentation attribute is not defined
         if(nodeObj.getAttribute('documentation') === undefined){
-            this.$doc.append("Editor is disabled because attribute 'documentation' is not found in Meta-Model");
+            this.$doc.append('Editor is disabled because attribute "documentation" is not found in Meta-Model');
         }
 
         // Load EpicEditor on click
@@ -109,7 +109,7 @@ define([
         });
 
         // Show Popover when click on name
-        this.skinParts.$name.on('click', function(event){
+        this.skinParts.$name.on('click', function (event) {
             self.skinParts.$name.popover({});
             self.skinParts.$name.popover('show');
             console.log(self.skinParts.$name.popover);
@@ -277,10 +277,9 @@ define([
      * Initialize Dialog and Editor creation
      * @return {void} 
      */
-    DocumentDecorator.prototype._initDialog = function(){
+    DocumentDecorator.prototype._initDialog = function () {
         var self = this;
         var client = this._control._client;
-        var metaObj = client.getMeta(this._metaInfo[CONSTANTS.GME_ID]);
         var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
         var documentation = nodeObj.getAttribute('documentation') || 'Click to enter documentation.';
         if(nodeObj.getAttribute('documentation') !== undefined){
@@ -289,7 +288,7 @@ define([
 
         // Initialize with documentation attribute and save callback function
         this.editorDialog.initialize(documentation, 
-            function(text){
+            function (text) {
                 try {
                     client.setAttributes(self._metaInfo[CONSTANTS.GME_ID], 'documentation', text);
                     self.$doc.empty();
@@ -299,17 +298,7 @@ define([
                 }
             }
         );
-    }
+    };
 
     return DocumentDecorator;
 });
-
-
-
-
-
-
-
-
-
-
